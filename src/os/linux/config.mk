@@ -1320,7 +1320,7 @@ ifeq ($(PLATFORM),PC)
 	export CFLAGS
     else
 	# Linux 2.6
-	EXTRA_CFLAGS := $(WFLAGS) 
+	EXTRA_CFLAGS := $(WFLAGS) -Wno-return-type -Wno-incompatible-pointer-types -Wno-implicit-function-declaration -Wno-unused-variable
     endif
 endif
 
