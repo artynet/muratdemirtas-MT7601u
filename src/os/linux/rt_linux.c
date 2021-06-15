@@ -120,10 +120,13 @@ static inline VOID __RTMP_OS_Init_Timer(
 	IN PVOID data)
 {
 	if (!timer_pending(pTimer)) {
-		// init_timer(pTimer);
-		// pTimer->data = (unsigned long)data;
-		// pTimer->function = function;
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4,15,0)
+		init_timer(pTimer);
+		pTimer->data = (unsigned long)data;
+		pTimer->function = function;
+#else
 		timer_setup(pTimer, function, (unsigned long)data);
+#endif
 	}
 }
 
@@ -1179,7 +1182,11 @@ int RtmpOSFileRead(RTMP_OS_FD osfd, char *pDataPtr, int readLen)
 
 int RtmpOSFileWrite(RTMP_OS_FD osfd, char *pDataPtr, int writeLen)
 {
-	return osfd->f_op->write(osfd, pDataPtr, (size_t) writeLen, &osfd->f_pos);
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 9, 0)
+	return vfs_write(osfd, pDataPtr, (size_t) writeLen, &osfd->f_pos);
+#else
+	return kernel_write(osfd, pDataPtr, (size_t) writeLen, &osfd->f_pos);
+#endif
 }
 
 static inline void __RtmpOSFSInfoChange(OS_FS_INFO * pOSFSInfo, BOOLEAN bSet)
